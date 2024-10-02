@@ -73,9 +73,10 @@ def plot_climatology(ds, urban_vicinity, variable, URBAN, ucdb_city = [],
         ax.set_title(f"Maximum temperature anomaly for {city}", fontsize = 14)    
     
     # Overlay the cell borders and handle NaNs
-    URBAN.plot_urban_borders(urban_vicinity, ax, 
-                             alpha_urb_borders, 
-                             linewidth_urb_borders)
+    #URBAN.plot_urban_borders(urban_vicinity, ax, 
+    #                         alpha_urb_borders, 
+    #                         linewidth_urb_borders)
+    URBAN.plot_urban_polygon(urban_vicinity, ax)
     
     plt.subplots_adjust(wspace=0.1, hspace=0.1)
     

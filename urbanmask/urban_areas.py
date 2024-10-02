@@ -1,5 +1,6 @@
 import cartopy.crs as ccrs
 import dask
+import pandas as pd
 import geopandas as gpd
 import glob
 import matplotlib.pyplot as plt
@@ -11,6 +12,9 @@ from itertools import product
 from matplotlib.colors import LinearSegmentedColormap
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from skimage.morphology import dilation, square, remove_small_objects
+
+from shapely.geometry import Polygon
+from shapely.ops import unary_union
 
 class Urban_vicinity:
     def __init__(
@@ -263,6 +267,50 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
         urban_area = Urban_vicinity.netcdf_attrs(self, urban_area)
         
         return urban_area
+
+    def plot_urban_polygon(self, ds, ax):
+        '''
+        '''
+        # Assume the mask is in the 'urmask' variable
+        mask = ds['urmask']
+        lon2d = mask.lon.values
+        lat2d = mask.lat.values
+        dist_lat = abs(lat2d[1, 0] - lat2d[0, 0])/2
+        dist_lon = abs(lon2d[0, 1] - lon2d[0, 0])/2
+        
+        # Create lists to store polygons for urban areas (mask == 1) and non-urban areas (mask == 0)
+        urban_polygons = []
+        non_urban_polygons = []
+        # Iterate through the mask and generate polygons for urban (1) and non-urban (0) cells
+        for lat in range(mask.shape[0] - 1):  # Avoid the last index to prevent out-of-bounds errors
+            for lon in range(mask.shape[1] - 1):
+                # Create a polygon using the 2D lat/lon coordinates of the cell corners
+                if pd.isnull(mask.lon[lat, lon]): # If cell contains nans continue
+                    continue
+                square = Polygon([
+                    (mask.lon[lat, lon] - dist_lon, mask.lat[lat, lon] - dist_lat),          # bottom-left corner
+                    (mask.lon[lat, lon + 1] - dist_lon, mask.lat[lat, lon + 1] - dist_lat),  # bottom-right corner
+                    (mask.lon[lat + 1, lon + 1] - dist_lon, mask.lat[lat + 1, lon + 1] - dist_lat),  # top-right corner
+                    (mask.lon[lat + 1, lon] - dist_lon, mask.lat[lat + 1, lon] - dist_lat),  # top-left corner
+                ])
+                # Add the polygon to the corresponding list
+                if mask[lat, lon] == 1:
+                    urban_polygons.append(square)
+                elif mask[lat, lon] == 0:
+                    non_urban_polygons.append(square)
+        # Unite all adjacent polygons for urban (mask == 1) and non-urban (mask == 0)
+        unified_urban_polygon = unary_union(urban_polygons)
+        unified_non_urban_polygon = unary_union(non_urban_polygons)
+        # Create GeoDataFrames for the urban and non-urban polygons
+        # CRS 'EPSG:4326' specifies the WGS 84 coordinate system, which is widely used for global GPS coordinates (lat/lon)
+        gdf_urban = gpd.GeoDataFrame(geometry=[unified_urban_polygon])
+        gdf_non_urban = gpd.GeoDataFrame(geometry=[unified_non_urban_polygon])
+        # Plot the boundary of the unified non-urban polygon (in blue)
+        gdf_non_urban.boundary.plot(ax=ax,color='b', zorder=1, linewidth=2)
+        # Plot the boundary of the unified urban polygon (in red) on top of the non-urban
+        gdf_urban.boundary.plot(ax=ax,  color='red', zorder=100, linewidth=2)
+
+        return(gdf_urban, gdf_non_urban)
     
     def plot_urban_borders(self, ds, ax, alpha = 1, linewidth = 2):
         """
@@ -435,7 +483,9 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
 
         if urban_areas:
             for k in range(3):
-                Urban_vicinity.plot_urban_borders(self, urban_areas, axes[1, k])
+                #Urban_vicinity.plot_urban_borders(self, urban_areas, axes[1, k])
+                Urban_vicinity.plot_urban_polygon(self, urban_areas, axes[1, k])
+
 
         plt.subplots_adjust(wspace=0.1, hspace=0.1)  # Adjust vertical and horizontal space
         return fig
