@@ -31,6 +31,7 @@ class Urban_vicinity:
         lat_lim : float = 1.0,
         model : str | None = None,
         domain : str | None = None,
+        urban_var : str | None = None,
     ):
         """
         Hyperparameters requered for urban/rural area selection
@@ -75,6 +76,7 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
         self.lat_lim = lat_lim
         self.model = model
         self.domain = domain
+        self.urban_var = urban_var
 
     def crop_area_city(
         self, 
@@ -119,7 +121,7 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
         self, 
         ds_sftuf : xr.DataArray | None = None, 
         ds_orog : xr.DataArray | None = None, 
-        ds_sftlf: xr.DataArray | None = None
+        ds_sftlf: xr.DataArray | None = None,
     )-> xr.DataArray:
         """
         Define masks for urban fraction, orography and land-sea mask.
@@ -145,15 +147,15 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
             Binary mask indicating sea areas.
         """
         # sftuf
-        sftuf_mask = ds_sftuf["sftuf"] > self.urban_th
+        sftuf_mask = ds_sftuf[self.urban_var] > self.urban_th
         # Remove small objects
         sftuf_mask_rem_small = remove_small_objects(sftuf_mask.values.astype(bool), 
                                                     min_size = self.min_city_size)
         sftuf_mask.data = sftuf_mask_rem_small
-        deleted_small = ~sftuf_mask_rem_small*(ds_sftuf["sftuf"] > self.urban_th)
+        deleted_small = ~sftuf_mask_rem_small*(ds_sftuf[self.urban_var] > self.urban_th)
         # Calculate surrounding mask and delete small objects from it
-        sftuf_sur_mask_1 = ds_sftuf["sftuf"] <= self.urban_th
-        sftuf_sur_mask_2 = ds_sftuf["sftuf"] > self.urban_sur_th
+        sftuf_sur_mask_1 = ds_sftuf[self.urban_var] <= self.urban_th
+        sftuf_sur_mask_2 = ds_sftuf[self.urban_var] > self.urban_sur_th
         sftuf_sur_mask_th = sftuf_sur_mask_1*sftuf_sur_mask_2
         sftuf_sur_mask = xr.where(deleted_small, True, sftuf_sur_mask_th)
         # orog
@@ -427,10 +429,13 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
         fig, axes = plt.subplots(2, 3, subplot_kw={'projection': proj}, figsize=(20, 10))
                         
         im1 = axes[0, 0].pcolormesh(ds_sftuf.lon, ds_sftuf.lat,
-                                    ds_sftuf["sftuf"].values,
-                                    cmap='binary')
-        fig.colorbar(im1, ax=axes[0, 0], orientation='vertical')
-        axes[0, 0].set_title('Urban Fraction')
+                                    ds_sftuf[self.urban_var].values,
+                                    cmap='binary',
+                                    vmin = np.nanmin(ds_sftuf[self.urban_var]), 
+                                    vmax = np.nanmax(ds_sftuf[self.urban_var]))
+        cim1 = fig.colorbar(im1, ax=axes[0, 0], orientation='vertical')
+        cim1.set_label("Units: %")
+        axes[0, 0].set_title('Urban Fraction', fontsize = 14)
         axes[0, 0].coastlines()
         
         im2 = axes[0, 1].pcolormesh(ds_orog.lon, ds_orog.lat,
@@ -438,47 +443,58 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
                                     cmap=custom_cmap, 
                                     vmin = np.nanmin(ds_orog['orog']), 
                                     vmax = np.nanmax(ds_orog['orog'])
-        )
-        fig.colorbar(im2, ax=axes[0, 1], orientation='vertical')
-        axes[0, 1].set_title('Orography')
+                                   )
+        
+        cim2 = fig.colorbar(im2, ax=axes[0, 1], orientation='vertical')
+        cim2.set_label("Units: m")
+        axes[0, 1].set_title('Orography', fontsize = 14)
         axes[0, 1].coastlines()
         
         im3 = axes[0, 2].pcolormesh(ds_sftlf.lon, ds_sftlf.lat,
                                     ds_sftlf["sftlf"],
-                                    cmap='winter', vmin = 0, vmax = 100)
-        fig.colorbar(im3, ax=axes[0, 2], orientation='vertical')
-        axes[0, 2].set_title('Land-sea')
+                                    cmap='winter', 
+                                    vmin = np.nanmin(ds_sftlf["sftlf"]), 
+                                    vmax = np.nanmax(ds_sftlf["sftlf"])
+                                   )
+        cim3 = fig.colorbar(im3, ax=axes[0, 2], orientation='vertical')
+        cim3.set_label("Units: %")
+        axes[0, 2].set_title('Land-sea', fontsize = 14)
         axes[0, 2].coastlines()
     
         # masks
-        vmax = np.nanmax(abs(ds_sftuf["sftuf"].where(sftuf_mask == 1, np.nan).values))
         im1 = axes[1, 0].pcolormesh(ds_sftuf.lon, ds_sftuf.lat,
-                                    ds_sftuf["sftuf"].where(sftuf_mask == 1, np.nan),
-                                    cmap='binary')
+                                    ds_sftuf[self.urban_var].where(sftuf_mask == 1, np.nan),
+                                    cmap='binary',
+                                    vmin = np.nanmin(ds_sftuf[self.urban_var]),
+                                    vmax = np.nanmax(ds_sftuf[self.urban_var])
+                                   )
         fig.colorbar(im1, ax=axes[1, 0], orientation='vertical')
         if not urban_areas:
-            axes[1, 0].set_title('Urban Fraction\n(sftuf >' +  str(self.urban_th) + ')')
+            axes[1, 0].set_title('Urban Fraction\n(urb_th >' +  str(self.urban_th) + ')')
         else:
-            axes[1, 0].set_title(f"Urban Fraction\n(Urb. (sftuf) > {self.urban_th}, Surr.(sftuf) <= {self.urban_sur_th}\nscale = {self.scale}, max_city = {self.min_city_size})")
+            axes[1, 0].set_title(f"Urban Fraction\n(urb_th = {self.urban_th}, urb_sur_th = {self.urban_sur_th}\nscale = {self.scale}, max_city = {self.min_city_size})", fontsize = 14)
         axes[1, 0].coastlines()
-        
+
         im2 = axes[1, 1].pcolormesh(ds_orog.lon, ds_orog.lat,
                                     ds_orog['orog'].where(orog_mask == 1, np.nan), 
                                     cmap=custom_cmap, 
                                     vmin = np.nanmin(ds_orog['orog']), 
                                     vmax = np.nanmax(ds_orog['orog'])
-        )
+                                   )
         fig.colorbar(im2, ax=axes[1, 1], orientation='vertical')
         elev_lim_min = self.urban_elev_min - self.orog_diff
         elev_lim_max = self.urban_elev_max + self.orog_diff
-        axes[1, 1].set_title(f'Orography\n({elev_lim_min:.0f} m < orog < {elev_lim_max:.0f} m)')
+        axes[1, 1].set_title(f'Orography\n(orog_diff = {self.orog_diff};\n{elev_lim_min:.0f} m < orog < {elev_lim_max:.0f} m)', fontsize = 14)
         axes[1, 1].coastlines()
-        
+
         im3 = axes[1, 2].pcolormesh(ds_sftlf.lon, ds_sftlf.lat,
                                     ds_sftlf["sftlf"].where(sftlf_mask == 1, np.nan),
-                                    cmap='winter', vmin = 0, vmax = 100)
+                                    cmap='winter', 
+                                    vmin = np.nanmin(ds_sftlf["sftlf"]), 
+                                    vmax = np.nanmax(ds_sftlf["sftlf"])
+                                   )
         fig.colorbar(im3, ax=axes[1, 2], orientation='vertical')
-        axes[1, 2].set_title('Land-sea\n(sftlf >' + str(self.sftlf_th) + '%)')
+        axes[1, 2].set_title('Land-sea\n(sftlf_th= 70;\nsftlf >' + str(self.sftlf_th) + '%)', fontsize = 14)
         axes[1, 2].coastlines()
 
         if urban_areas:

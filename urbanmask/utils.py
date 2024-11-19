@@ -69,3 +69,54 @@ def fix_360_longitudes(
     if lon.max().values > 180 and lon.min().values >= 0:
         dataset[lonname] = dataset[lonname].where(lon <= 180, other=lon - 360)
     return dataset
+
+RCM_DICT = {
+    'EUR-11': 
+    { 
+        'REMO': 'GERICS_REMO2015',
+        'RegCM': 'ICTP_RegCM4-6',
+    },
+    'EUR-22': 
+    {
+        'REMO': 'GERICS_REMO2015',
+    },
+    'WAS-22': {
+        'REMO': 'GERICS_REMO2015',
+        'RegCM': 'ICTP_RegCM4-7',
+    },
+    'EAS-22':
+     {
+        'REMO': 'GERICS_REMO2015',
+        'RegCM': 'KNU_RegCM4-0',
+    },
+    'CAM-22':
+     {
+        'REMO': 'GERICS_REMO2015',
+        'RegCM': 'ICTP_RegCM4-7',
+    },
+    'SAM-22':
+     {
+        'REMO': 'GERICS_REMO2015',
+        'RegCM': 'ICTP_RegCM4-7',
+    },
+    'NAM-22':
+     {
+        'REMO': 'GERICS_REMO2015',
+        'RegCM': 'ICTP_RegCM4-6',
+    },
+    'AUS-22':
+     {
+        'REMO': 'GERICS_REMO2015',
+        'RegCM': 'ICTP_RegCM4-7',
+    },
+    'AFR-22':
+     {
+        'REMO': 'GERICS_REMO2015',
+        'RegCM': 'ICTP_RegCM4-7',
+    },
+    'SEA-22':
+    {
+        'REMO': 'GERICS_REMO2015',
+        'RegCM': 'ICTP_RegCM4-7',
+    },
+}
