@@ -57,8 +57,8 @@ def plot_climatology(ds, urban_vicinity, variable, URBAN, ucdb_city = [],
 
     im1 = ax.pcolormesh(ds.lon, ds.lat, ds_anomaly.values,
                     cmap='bwr', alpha = 0.7,
-                    vmin = - max_abs_value, 
-                    vmax = max_abs_value)
+                    vmin = - 1, 
+                    vmax = 1)
     
     cbar = fig.colorbar(im1, ax = ax)
     cbar.set_label('°C', rotation = 90, fontsize = 14)
@@ -84,7 +84,7 @@ def plot_climatology(ds, urban_vicinity, variable, URBAN, ucdb_city = [],
 
 def plot_time_series(ds_var, variable, urban_vicinity, 
                      time_series = [], valid_stations = [], 
-                     data_squares = False, percentile = 100, 
+                     data_squares = False, percentile = 95, 
                      var_map = var_map, ucdb_city = None, 
                      city = None, cache = ''):
     '''
@@ -156,13 +156,25 @@ def plot_time_series(ds_var, variable, urban_vicinity,
             ax.fill_between(
                 rural_anomaly['month'],
                 lower_percentile, upper_percentile,
-                color=colors[index], alpha=0.1
+                color=colors[index], alpha=0.1, linewidth=1, linestyle = '--',
+            )
+
+            # Plot the lower percentile line
+            ax.plot(
+                rural_anomaly['month'], lower_percentile,
+                color=colors[index], alpha=0.7, linewidth=1, linestyle='--', label=f'Lower Percentile'
+            )
+            
+            # Plot the upper percentile line
+            ax.plot(
+                rural_anomaly['month'], upper_percentile,
+                color=colors[index], alpha=0.7, linewidth=1, linestyle='--', label=f'Upper Percentile'
             )
             for i, j in product(anom.cf['X'].values, anom.cf['Y'].values):
                 anom_val = anom.sel({ds_var.cf['X'].name:i,
                                      ds_var.cf['Y'].name:j})
                 if not np.isnan(anom_val[0]):
-                    anom_val.plot(ax=ax, color=colors[index], linewidth=0.5)
+                    anom_val.plot(ax=ax, color=colors[index], linewidth=0.1, alpha = 0.4)
                          
     #Plot the observation if requested
     if not isinstance(valid_stations, list):
@@ -206,5 +218,7 @@ def plot_time_series(ds_var, variable, urban_vicinity,
     ax.set_xticklabels(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 
                         'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], fontsize = 18)
     ax.tick_params(axis='y', labelsize=18)
+
+    ax.set_ylim(-1, 2)
     
     return fig
