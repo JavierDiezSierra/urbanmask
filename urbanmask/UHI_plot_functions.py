@@ -57,21 +57,37 @@ def plot_climatology(ds, urban_vicinity, variable, URBAN, ucdb_city = [],
 
     im1 = ax.pcolormesh(ds.lon, ds.lat, ds_anomaly.values,
                     cmap='bwr', alpha = 0.7,
-                    vmin = - 1, 
-                    vmax = 1)
+                     vmin = -max_abs_value, vmax = max_abs_value)
     
     cbar = fig.colorbar(im1, ax = ax)
-    cbar.set_label('°C', rotation = 90, fontsize = 14)
-    
     if not isinstance(valid_stations, list):#change
         ucdb_city.plot(ax=ax, facecolor="none", transform=proj, edgecolor="Green", linewidth=2, zorder = 1000)
     
     ax.coastlines()
+    # Dynamically get the unit from the dataset
+    unit = ds[variable].attrs.get('units', 'unknown')  # Default to 'unknown' if 'units' is missing
+
+    cbar.set_label(f"{unit}", rotation = 90, fontsize = 14)
     if variable == 'tasmin':
-        ax.set_title(f"Minimum temperature anomaly for {city}", fontsize = 14)
+        ax.set_title(f"Minimum temperature anomaly for {city}", fontsize=18)
+        ax.set_ylabel(f"Minimum temperature anomaly ({unit})", fontsize=18)
     elif variable == 'tasmax':
-        ax.set_title(f"Maximum temperature anomaly for {city}", fontsize = 14)    
+        ax.set_title(f"Maximum temperature anomaly for {city}", fontsize=18)
+        ax.set_ylabel(f"Maximum temperature anomaly ({unit})", fontsize=18)
+    elif variable == 'huss':
+        ax.set_title(f"Atmospheric moisture anomaly for {city}", fontsize=18)
+        ax.set_ylabel(f"Atmospheric moisture anomaly ({unit})", fontsize=18)
+    elif variable == 'hurs':
+        ax.set_title(f"Relative atmospheric humidity anomaly for {city}", fontsize=18)
+        ax.set_ylabel(f"Relative atmospheric humidity ({unit})", fontsize=18)
+    elif variable == 'sfcWind':
+        ax.set_title(f"Wind speed anomaly for {city}", fontsize=18)
+        ax.set_ylabel(f"Wind speed anomaly ({unit})", fontsize=18)
+    elif variable == 'pr':
+        ax.set_title(f"Precipitation anomaly for {city}", fontsize=18)
+        ax.set_ylabel(f"Precipitation anomaly ({unit})", fontsize=18)
     
+
     # Overlay the cell borders and handle NaNs
     #URBAN.plot_urban_borders(urban_vicinity, ax, 
     #                         alpha_urb_borders, 
@@ -162,14 +178,11 @@ def plot_time_series(ds_var, variable, urban_vicinity,
             # Plot the lower percentile line
             ax.plot(
                 rural_anomaly['month'], lower_percentile,
-                color=colors[index], alpha=0.7, linewidth=1, linestyle='--', label=f'Lower Percentile'
-            )
-            
+                color=colors[index], alpha=0.7, linewidth=1, linestyle='--', label=f'Lower Percentile')
             # Plot the upper percentile line
             ax.plot(
                 rural_anomaly['month'], upper_percentile,
-                color=colors[index], alpha=0.7, linewidth=1, linestyle='--', label=f'Upper Percentile'
-            )
+                color=colors[index], alpha=0.7, linewidth=1, linestyle='--', label=f'Upper Percentile')
             for i, j in product(anom.cf['X'].values, anom.cf['Y'].values):
                 anom_val = anom.sel({ds_var.cf['X'].name:i,
                                      ds_var.cf['Y'].name:j})
@@ -204,21 +217,35 @@ def plot_time_series(ds_var, variable, urban_vicinity,
                 )).to_netcdf(cache)
     # Add legend to the plot
     ax.legend(fontsize = 14, loc='center left', bbox_to_anchor=(0, -0.2), prop={'size': 14})
+
     
     # Customize the plot
     #ax.set_xlabel('Month', fontsize = 18)
+    # Dynamically get the unit from the dataset
+    unit = ds_var[variable].attrs.get('units', 'unknown')  # Default to 'unknown' if 'units' is missing
+    
     if variable == 'tasmin':
-        ax.set_title(f"Minimum temperature anomaly for {city}", fontsize = 18)
-        ax.set_ylabel(f"Minimum temperature anomaly (°C)", fontsize = 18)
+        ax.set_title(f"Minimum temperature anomaly for {city}", fontsize=18)
+        ax.set_ylabel(f"Minimum temperature anomaly ({unit})", fontsize=18)
     elif variable == 'tasmax':
-        ax.set_title(f"Maximum temperature anomaly for {city}", fontsize = 18)
-        ax.set_ylabel(f"Maximum temperature anomaly (°C)", fontsize = 18)
+        ax.set_title(f"Maximum temperature anomaly for {city}", fontsize=18)
+        ax.set_ylabel(f"Maximum temperature anomaly ({unit})", fontsize=18)
+    elif variable == 'huss':
+        ax.set_title(f"Atmospheric moisture anomaly for {city}", fontsize=18)
+        ax.set_ylabel(f"Atmospheric moisture anomaly ({unit})", fontsize=18)
+    elif variable == 'hurs':
+        ax.set_title(f"Relative atmospheric humidity anomaly for {city}", fontsize=18)
+        ax.set_ylabel(f"Relative atmospheric humidity ({unit})", fontsize=18)
+    elif variable == 'sfcWind':
+        ax.set_title(f"Wind speed anomaly for {city}", fontsize=18)
+        ax.set_ylabel(f"Wind speed anomaly ({unit})", fontsize=18)
+    elif variable == 'pr':
+        ax.set_title(f"Precipitation anomaly for {city}", fontsize=18)
+        ax.set_ylabel(f"Precipitation anomaly ({unit})", fontsize=18)
     
     ax.set_xticks(np.arange(1, 13))
     ax.set_xticklabels(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 
                         'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], fontsize = 18)
     ax.tick_params(axis='y', labelsize=18)
-
-    ax.set_ylim(-1, 2)
     
     return fig

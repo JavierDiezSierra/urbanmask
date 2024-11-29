@@ -111,10 +111,15 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
             ds.cf['X'].name : slice(ilon-dlon,ilon+dlon)
             })   
         else:
-            ds = ds.isel(**{
-            'lat' : slice(ilat-dlat,ilat+dlat),
-            'lon' : slice(ilon-dlon,ilon+dlon)
-            })  
+         		# Crop the area for the city using the domain resolution
+            # Define trimming limits
+            lat_min = self.lat_city - self.lat_lim
+            lat_max = self.lat_city + self.lat_lim
+            lon_min = self.lon_city - self.lon_lim
+            lon_max = self.lon_city + self.lon_lim
+            
+            # Crop the dataset
+            ds = ds.sel(lat=slice(lat_min, lat_max), lon=slice(lon_min, lon_max))
         return ds
 
     def define_masks(
@@ -277,29 +282,50 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
         mask = ds['urmask']
         lon2d = mask.lon.values
         lat2d = mask.lat.values
-        dist_lat = abs(lat2d[1, 0] - lat2d[0, 0])/2
-        dist_lon = abs(lon2d[0, 1] - lon2d[0, 0])/2
         
         # Create lists to store polygons for urban areas (mask == 1) and non-urban areas (mask == 0)
         urban_polygons = []
         non_urban_polygons = []
-        # Iterate through the mask and generate polygons for urban (1) and non-urban (0) cells
-        for lat in range(mask.shape[0] - 1):  # Avoid the last index to prevent out-of-bounds errors
-            for lon in range(mask.shape[1] - 1):
-                # Create a polygon using the 2D lat/lon coordinates of the cell corners
-                if pd.isnull(mask.lon[lat, lon]): # If cell contains nans continue
-                    continue
-                square = Polygon([
-                    (mask.lon[lat, lon] - dist_lon, mask.lat[lat, lon] - dist_lat),          # bottom-left corner
-                    (mask.lon[lat, lon + 1] - dist_lon, mask.lat[lat, lon + 1] - dist_lat),  # bottom-right corner
-                    (mask.lon[lat + 1, lon + 1] - dist_lon, mask.lat[lat + 1, lon + 1] - dist_lat),  # top-right corner
-                    (mask.lon[lat + 1, lon] - dist_lon, mask.lat[lat + 1, lon] - dist_lat),  # top-left corner
-                ])
-                # Add the polygon to the corresponding list
-                if mask[lat, lon] == 1:
-                    urban_polygons.append(square)
-                elif mask[lat, lon] == 0:
-                    non_urban_polygons.append(square)
+        
+        if lon2d.ndim == 1:
+            dist_lat = abs(lat2d[1] - lat2d[0]) / 2
+            dist_lon = abs(lon2d[1] - lon2d[0]) / 2
+            for lon in range(len(lon2d)):
+                for lat in range(len(lat2d)):
+                    square = Polygon([
+                        (round(lon2d[lon] - dist_lon, 3), round(lat2d[lat] - dist_lat, 3)),  # bottom-left corner
+                        (round(lon2d[lon] + dist_lon, 3), round(lat2d[lat] - dist_lat, 3)),  # bottom-right corner
+                        (round(lon2d[lon] + dist_lon, 3), round(lat2d[lat] + dist_lat, 3)),  # top-right corner
+                        (round(lon2d[lon] - dist_lon, 3), round(lat2d[lat] + dist_lat, 3)),  # top-left corner
+                    ])
+
+                    # Add the polygon to the corresponding list
+                    if mask[lat, lon] == 1:
+                        urban_polygons.append(square)
+                    elif mask[lat, lon] == 0:
+                        non_urban_polygons.append(square)
+        else:
+            dist_lat = abs(lat2d[1, 0] - lat2d[0, 0])/2
+            dist_lon = abs(lon2d[0, 1] - lon2d[0, 0])/2
+    
+            # Iterate through the mask and generate polygons for urban (1) and non-urban (0) cells
+            for lat in range(mask.shape[0] - 1):  # Avoid the last index to prevent out-of-bounds errors
+                for lon in range(mask.shape[1] - 1):
+                    # Create a polygon using the 2D lat/lon coordinates of the cell corners
+                    if pd.isnull(mask.lon[lat, lon]): # If cell contains nans continue
+                        continue
+                    square = Polygon([
+                        (mask.lon[lat, lon] - dist_lon, mask.lat[lat, lon] - dist_lat),          # bottom-left corner
+                        (mask.lon[lat, lon + 1] - dist_lon, mask.lat[lat, lon + 1] - dist_lat),  # bottom-right corner
+                        (mask.lon[lat + 1, lon + 1] - dist_lon, mask.lat[lat + 1, lon + 1] - dist_lat),  # top-right corner
+                        (mask.lon[lat + 1, lon] - dist_lon, mask.lat[lat + 1, lon] - dist_lat),  # top-left corner
+                    ])
+                    # Add the polygon to the corresponding list
+                    if mask[lat, lon] == 1:
+                        urban_polygons.append(square)
+                    elif mask[lat, lon] == 0:
+                        non_urban_polygons.append(square)
+                        
         # Unite all adjacent polygons for urban (mask == 1) and non-urban (mask == 0)
         unified_urban_polygon = unary_union(urban_polygons)
         unified_non_urban_polygon = unary_union(non_urban_polygons)
