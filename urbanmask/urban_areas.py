@@ -13,6 +13,7 @@ from matplotlib.colors import LinearSegmentedColormap
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from skimage.morphology import dilation, square, remove_small_objects
 
+from shapely.geometry import box
 from shapely.geometry import Polygon
 from shapely.ops import unary_union
 
@@ -552,3 +553,57 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
                 ds['urmask'].attrs[attr] = getattr(self, attr)
             
         return ds
+
+
+    def create_urban_dataset(self,ucdb_city, ds):
+        '''
+        Creates a dataset for urban areas where each cell value represents the percentage of the cell area
+        that is within the city limits.
+    
+        Parameters:ssh-keygen -f "/home/yaizaquintana/.ssh/known_hosts" -R "ui.sci.unican.es"
+        ucdb_city: GeoDataFrame containing the city's geometry.
+        ds: Dataset from which we are extracting the coordinates.
+    
+        Returns:
+            ds_urban: An xarray dataset with cells representing the percentage of urban area coverage.
+        '''
+    
+        # Create a grid of latitude and longitude edges to define cell boundaries
+        lon_grid, lat_grid = np.meshgrid(ds['lon'].values, ds['lat'].values)
+    
+        # Combine all geometries into a single geometry (in case there are multiple city polygons)
+        city_geometry = ucdb_city.geometry.unary_union
+    
+        # Create an array to store the percentage of each cell covered by the city
+        urban_data = np.zeros((ds['lat'].size, ds['lon'].size))
+    
+        # Calculate percentage for each cell
+        for i in range(ds['lat'].size):
+            for j in range(ds['lon'].size):
+                # Define the boundaries of the cell as a polygon
+                cell_poly = box(
+                    lon_grid[i, j] - 0.5 * np.diff(ds['lon'])[0],  # left
+                    lat_grid[i, j] - 0.5 * np.diff(ds['lat'])[0],  # bottom
+                    lon_grid[i, j] + 0.5 * np.diff(ds['lon'])[0],  # right
+                    lat_grid[i, j] + 0.5 * np.diff(ds['lat'])[0]   # top
+                )
+    
+                # Calculate the area of intersection with the city geometry
+                intersection_area = cell_poly.intersection(city_geometry).area
+                cell_area = cell_poly.area
+    
+                # Calculate the percentage of the cell covered by the city
+                urban_data[i, j] = (intersection_area / cell_area) * 100
+    
+        # Create the final xarray dataset containing the urban percentage information
+        ds_urban = xr.Dataset(
+            {
+                'sftuf': (['lat', 'lon'], urban_data)
+            },
+            coords={
+                'lat': ds['lat'],
+                'lon': ds['lon'],
+            }
+        )
+        
+        return ds_urban
