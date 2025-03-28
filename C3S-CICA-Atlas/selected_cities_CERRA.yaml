@@ -1,0 +1,83 @@
+DEFAULT:
+    urban_th: 40
+    urban_sur_th : 10
+    orog_diff: 100
+    sftlf_th : 70
+    lon_lim : 1
+    lat_lim : 1
+    min_city_size: 0
+    coastal: False
+    mountain: False
+
+Moscow:
+    name: Moscow
+    ktype: Dfb
+    coastal: False
+    mountain: False
+    lon: 37.62
+    lat: 55.75
+
+Paris:
+    name: Paris
+    ktype: Cfb
+    coastal: False
+    mountain: False
+    lon: 2.35
+    lat: 48.85
+    comment: >
+        FPS URB-RCC core city
+
+London:
+    name: London
+    ktype: Cfb
+    coastal: False
+    mountain: False
+    lon: -0.13
+    lat: 51.50
+
+Istanbul:
+    name: Istanbul
+    ktype: Csa
+    coastal: True
+    mountain: False
+    lon: 28.98
+    lat: 41.01
+
+Berlin:
+    name: Berlin
+    ktype: Cfb
+    coastal: False
+    mountain: False
+    lon: 13.4039
+    lat: 52.4683
+
+Naples:
+    name: Naples
+    ktype: CsB
+    coastal: True
+    mountain: False
+    lon: 14.27
+    lat: 40.85
+
+Barcelona:
+    name: Barcelona
+    ktype: Cfb
+    coastal: True
+    mountain: False
+    lon: 2.18
+    lat: 41.39
+
+Athens:
+    name: Athens
+    ktype: Csa
+    coastal: True
+    mountain: False
+    lon: 23.72
+    lat: 37.98
+Prague:
+    name: Prague
+    ktype: Cfb
+    coastal: False
+    mountain: False
+    lon: 14.42
+    lat: 50.08

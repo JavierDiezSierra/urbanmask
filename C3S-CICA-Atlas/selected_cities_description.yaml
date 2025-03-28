@@ -1,0 +1,607 @@
+
+
+
+Cairo:    
+    name: Cairo
+    ktype: Bwh
+    coastal: False
+    mountain: True
+    lon: 31.25
+    lat: 30.06
+    comment: >
+        closet to mountain areas
+
+Lagos:
+    name: Lagos
+    ktype: Aw
+    coastal: True
+    mountain: False
+    lon: 3.38
+    lat: 6.52
+    comment: >
+        smaller but monsoon
+
+Johannesburg:
+    name: Johannesburg
+    ktype: Cwb
+    coastal: False
+    mountain: False
+    lon: 28.183
+    lat: -25.733
+
+Luanda:
+    name: Luanda
+    ktype: BSh
+    coastal: True
+    mountain: False
+    lon: 13.24
+    lat: -8.81
+
+Khartoum:
+    name: Khartoum
+    ktype: BWh
+    coastal: False
+    mountain: False
+    lon: 32.53
+    lat: 15.58
+
+Sydney:
+    name: Sydney
+    ktype: Cfa
+    coastal: True
+    mountain: False
+    lon: 151.01810
+    lat: -33.79170
+
+Melbourne:
+    name: Melbourne
+    ktype: Cfb
+    coastal: True
+    mountain: False
+    lon: 144.96
+    lat: -37.81
+    comment: >
+        To replace Brisbane, as Melbourne is bigger & has flux tower
+
+MexicoCity:
+    name: Mexico City
+    ktype: None
+    coastal: False
+    mountain: True
+    lon: -99.0833
+    lat: 19.4667
+
+Moscow:
+    name: Moscow
+    ktype: Dfb
+    coastal: False
+    mountain: False
+    lon: 37.62
+    lat: 55.75
+    
+Tashkent:
+    name: Tashkent
+    ktype: Csa
+    coastal: False
+    mountain: False
+    lon: 69.24
+    lat: 41.31
+    comment: >
+        close to domain center
+
+Tehran:
+    name: Tehran
+    ktype: BSk
+    coastal: False
+    mountain: False
+    lon: 51.42
+    lat: 35.69
+
+Dhaka:
+    name: Dhaka
+    ktype: Aw
+    coastal: True
+    mountain: False
+    lon: 90.41
+    lat: 23.70
+    comment: >
+        COASTAL INLAND Floodplain / Delta
+
+Beijing:
+    name: Beijing
+    ktype: Cwa
+    coastal: False
+    mountain: False
+    lon: 116.41
+    lat: 39.90
+
+Tokyo:
+    name: Tokyo
+    ktype: Cfa
+    coastal: True
+    mountain: False
+    lon: 139.84
+    lat: 35.65
+
+Chengdu:
+    name: Chengdu
+    ktype: Cwa
+    coastal: False
+    mountain: False
+    lon: 104.07
+    lat: 30.67
+
+Seoul:
+    name: Seoul
+    ktype: Dwa
+    coastal: True
+    mountain: False
+    lon: 126.98
+    lat: 37.57
+
+Shanghai:
+    name: Shanghai
+    ktype: Cfa
+    coastal: True
+    mountain: False
+    lon: 121.47
+    lat: 31.23
+    comment: >
+        Big city, and largest Pop. and GDP in China. Observations available.
+
+Paris:
+    name: Paris
+    ktype: Cfb
+    coastal: False
+    mountain: False
+    lon: 2.35
+    lat: 48.85
+    comment: >
+        FPS URB-RCC core city
+
+London:
+    name: London
+    ktype: Cfb
+    coastal: False
+    mountain: False
+    lon: -0.13
+    lat: 51.50
+
+Istanbul:
+    name: Istanbul
+    ktype: Csa
+    coastal: True
+    mountain: False
+    lon: 28.98
+    lat: 41.01
+
+Berlin:
+    name: Berlin
+    ktype: Cfb
+    coastal: False
+    mountain: False
+    lon: 13.4039
+    lat: 52.4683
+
+Naples:
+    name: Naples
+    ktype: CsB
+    coastal: True
+    mountain: False
+    lon: 14.27
+    lat: 40.85
+
+Barcelona:
+    name: Barcelona
+    ktype: Cfb
+    coastal: True
+    mountain: False
+    lon: 2.18
+    lat: 41.39
+
+Athens:
+    name: Athens
+    ktype: Csa
+    coastal: True
+    mountain: False
+    lon: 23.72
+    lat: 37.98
+
+Prague:
+    name: Prague
+    ktype: Cfb
+    coastal: False
+    mountain: False
+    lon: 14.42
+    lat: 50.08
+
+Manila:
+    name: "Quezon City [Manila]"
+    ktype: Am
+    coastal: True
+    mountain: False
+    lon: 120.98
+    lat: 14.60
+
+Mumbai:
+    name: Mumbai
+    ktype: Am
+    coastal: True
+    mountain: False
+    lon: 72.82
+    lat: 18.96
+
+NewYork:
+    name: New York
+    ktype: Cfa
+    coastal: True
+    mountain: False
+    lon: -74.2261
+    lat: 40.8858
+
+BuenosAires:
+    name: Buenos Aires
+    ktype: Cfa
+    coastal: True
+    mountain: False
+    lon: -58.416
+    lat: -34.559
+
+SaoPaulo:
+    name: "São Paulo"
+    ktype: Cfb
+    coastal: False
+    mountain: False
+    lon: -46.633
+    lat: -23.550
+    
+
+LosAngeles:
+    name: Los Angeles
+    ktype: Csb
+    coastal: True
+    mountain: False
+    lon: -118.24
+    lat: 34.05
+
+Singapore:
+    name: Singapore
+    ktype: Af
+    coastal: True
+    mountain: False
+    lon: 103.85
+    lat: 1.29
+
+Bogota:
+    name: Bogota
+    ktype: Cfb
+    coastal: False
+    mountain: True
+    lon: -74.06
+    lat: 4.62
+
+Jakarta:
+    name: Jakarta
+    ktype: Af
+    coastal: True
+    mountain: False
+    lon: 106.83
+    lat: -6.18
+
+NewDelhi:
+    name: "Delhi [New Delhi]"
+    ktype: BSh
+    coastal: False
+    mountain: False
+    lon: 77.22
+    lat: 28.64
+
+Chicago:
+    name: Chicago
+    ktype: Dfa
+    coastal: False
+    mountain: False
+    lon: -87.55
+    lat: 41.73
+    
+Montreal:
+    name: Montreal
+    ktype: Dfb
+    coastal: False
+    mountain: False
+    lon: -73.56
+    lat: 45.50
+
+Lima:
+    name: Lima
+    ktype: ET
+    coastal: True
+    mountain: True
+    lon: -77.03
+    lat: -12.04
+
+SantiagoChile:
+    name: Santiago
+    country: Chile
+    ktype: Csb
+    coastal: True
+    mountain: True
+    lon: -70.65
+    lat: -33.46
+
+Riyadh:
+    name: Riyadh
+    ktype: BWh
+    coastal: False
+    mountain: False
+    lon: 46.73300
+    lat: 24.7000
+
+Baghdad:
+    name: Baghdad
+    ktype: BWh
+    coastal: False
+    mountain: False
+    lon: 44.40
+    lat: 33.34
+
+Lagos:
+    name: Lagos
+    ktype: Aw
+    coastal: True
+    mountain: False
+    lon: 3.38
+    lat: 6.52
+    comment: >
+        smaller but monsoon
+
+Johannesburg:
+    name: Johannesburg
+    ktype: Cwb
+    coastal: False
+    mountain: False
+    lon: 28.183
+    lat: -25.733
+
+Luanda:
+    name: Luanda
+    ktype: BSh
+    coastal: True
+    mountain: False
+    lon: 13.24
+    lat: -8.81
+
+Khartoum:
+    name: Khartoum
+    ktype: BWh
+    coastal: False
+    mountain: False
+    lon: 32.53
+    lat: 15.58
+
+Sydney:
+    name: Sydney
+    ktype: Cfa
+    coastal: True
+    mountain: False
+    lon: 151.01810
+    lat: -33.79170
+
+Melbourne:
+    name: Melbourne
+    ktype: Cfb
+    coastal: True
+    mountain: False
+    lon: 144.96
+    lat: -37.81
+    comment: >
+        To replace Brisbane, as Melbourne is bigger & has flux tower
+
+MexicoCity:
+    name: Mexico City
+    ktype: None
+    coastal: False
+    mountain: True
+    lon: -99.0833
+    lat: 19.4667
+
+
+Tashkent:
+    name: Tashkent
+    ktype: Csa
+    coastal: False
+    mountain: False
+    lon: 69.24
+    lat: 41.31
+    comment: >
+        close to domain center
+
+Tehran:
+    name: Tehran
+    ktype: BSk
+    coastal: False
+    mountain: False
+    lon: 51.42
+    lat: 35.69
+
+Dhaka:
+    name: Dhaka
+    ktype: Aw
+    coastal: True
+    mountain: False
+    lon: 90.41
+    lat: 23.70
+    comment: >
+        COASTAL INLAND Floodplain / Delta
+
+Beijing:
+    name: Beijing
+    ktype: Cwa
+    coastal: False
+    mountain: False
+    lon: 116.41
+    lat: 39.90
+
+Tokyo:
+    name: Tokyo
+    ktype: Cfa
+    coastal: True
+    mountain: False
+    lon: 139.84
+    lat: 35.65
+
+Chengdu:
+    name: Chengdu
+    ktype: Cwa
+    coastal: False
+    mountain: False
+    lon: 104.07
+    lat: 30.67
+
+Seoul:
+    name: Seoul
+    ktype: Dwa
+    coastal: True
+    mountain: False
+    lon: 126.98
+    lat: 37.57
+    
+Shanghai:
+    name: Shanghai
+    ktype: Cfa
+    coastal: True
+    mountain: False
+    lon: 121.47
+    lat: 31.23
+    comment: >
+        Big city, and largest Pop. and GDP in China. Observations available.
+
+
+Manila:
+    name: "Quezon City [Manila]"
+    ktype: Am
+    coastal: True
+    mountain: False
+    lon: 120.98
+    lat: 14.60
+
+Mumbai:
+    name: Mumbai
+    ktype: Am
+    coastal: True
+    mountain: False
+    lon: 72.82
+    lat: 18.96
+    
+NewYork:
+    name: New York
+    ktype: Cfa
+    coastal: True
+    mountain: False
+    lon: -74.2261
+    lat: 40.8858
+
+BuenosAires:
+    name: Buenos Aires
+    ktype: Cfa
+    coastal: True
+    mountain: False
+    lon: -58.416
+    lat: -34.559
+
+SaoPaulo:
+    name: "São Paulo"
+    ktype: Cfb
+    coastal: False
+    mountain: False
+    lon: -46.633
+    lat: -23.550
+    
+LosAngeles:
+    name: Los Angeles
+    ktype: Csb
+    coastal: True
+    mountain: False
+    lon: -118.24
+    lat: 34.05
+
+Singapore:
+    name: Singapore
+    ktype: Af
+    coastal: True
+    mountain: False
+    lon: 103.85
+    lat: 1.29
+
+Bogota:
+    name: Bogota
+    ktype: Cfb
+    coastal: False
+    mountain: True
+    lon: -74.06
+    lat: 4.62
+
+Jakarta:
+    name: Jakarta
+    ktype: Af
+    coastal: True
+    mountain: False
+    lon: 106.83
+    lat: -6.18
+    
+NewDelhi:
+    name: "Delhi [New Delhi]"
+    ktype: BSh
+    coastal: False
+    mountain: False
+    lon: 77.22
+    lat: 28.64
+
+Chicago:
+    name: Chicago
+    ktype: Dfa
+    coastal: False
+    mountain: False
+    lon: -87.55
+    lat: 41.73
+    
+Montreal:
+    name: Montreal
+    ktype: Dfb
+    coastal: False
+    mountain: False
+    lon: -73.56
+    lat: 45.50
+
+Lima:
+    name: Lima
+    ktype: ET
+    coastal: True
+    mountain: True
+    lon: -77.03
+    lat: -12.04
+
+SantiagoChile:
+    name: Santiago
+    country: Chile
+    ktype: Csb
+    coastal: True
+    mountain: True
+    lon: -70.65
+    lat: -33.46
+
+Riyadh:
+    name: Riyadh
+    ktype: BWh
+    coastal: False
+    mountain: False
+    lon: 46.73300
+    lat: 24.7000
+
+Baghdad:
+    name: Baghdad
+    ktype: BWh
+    coastal: False
+    mountain: False
+    lon: 44.40
+    lat: 33.34
