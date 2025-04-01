@@ -21,8 +21,10 @@ variables = [
     "huss",
     "sfcwind",
     "rsds",
-    "psl",
 ]
+
+variables = ['dtrbaisimip','dtrbals','cdbals', 'cdbaisimip', 'tx35baisimip', 'tx35bals', 'tx40baisimip', 'tx40bals',
+             'fdbaisimip', 'fdbals', 'hdbaisimip' , 'hdbals', 'trbals', 'trbaisimip' ]
 
 # Base notebook name
 notebook_input = "mask_CORDEX.ipynb"
@@ -32,13 +34,13 @@ for scenario in scenarios:
     for var in variables:
         if scenario == "historical":
             name = f"{var}_{domain}_historical_mon_197001-200512_v02.nc"
-            if var in ['cd','hd']:
+            if var in ['cd','hd', 'hdbaisimip' , 'hdbals','cdbals', 'cdbaisimip']:
                 name = f'{var}_{domain}_historical_yr_1970-2005_v02.nc'
             elif 'var'== 'sfcwind':
                 name = f'sfcwind_{domain}_historical_mon_197001-200512_v02.nc'
         else:
             name = f"{var}_{domain}_{scenario}_mon_200601-210012_v02.nc"
-            if var in ['cd','hd']:
+            if var in ['cd','hd', 'hdbaisimip' , 'hdbals','cdbals', 'cdbaisimip']:
                 name = f'{var}_{domain}_{scenario}_yr_2006-2100_v02.nc'
             elif 'var'== 'sfcwind':
                 name = f'sfcwind_{domain}_{scenario}_mon_200601-210012_v02.nc'
