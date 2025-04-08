@@ -6,17 +6,26 @@ import pandas as pd
 import xarray as xr
 from icecream import ic
 from itertools import product
-from shapely.geometry import Point, Polygon
+from urbanmask.urban_areas import plot_urban_polygon
+
 
 var_map = {
     'tasmin': 'TMIN',
     'tasmax': 'TMAX'
 }
 
-def plot_climatology(variable, URBAN, ds = None, urban_vicinity = None,  cache='', ucdb_city = [], 
-                     valid_stations = [], time_series = [], city = None,
-                     ax = None, alpha_urb_borders = 1, 
-                     linewidth_urb_borders = 2, vmax = None):
+def plot_climatology(ds = None, 
+                     variable = None, 
+                     urban_vicinity = None, 
+                     ucdb_city = [], 
+                     valid_stations = [], 
+                     time_series = [], 
+                     city = None,
+                     ax = None, 
+                     alpha_urb_borders = 1, 
+                     linewidth_urb_borders = 2, 
+                     vmax = None
+                    ):
     """
     Plot the climatological data.
 
@@ -36,20 +45,14 @@ def plot_climatology(variable, URBAN, ds = None, urban_vicinity = None,  cache='
         fig = None
                          
     # calculate climatology and anomaly from the model
-    if os.path.exists(cache):
-        ds_cache = xr.open_dataset(cache)
-        ds_anomaly = ds_cache[variable]
-    else:
-        ds_var_period_mean = ds.mean('time').compute()
-        rural_mean = ds_var_period_mean[variable].where(
-            urban_vicinity['urmask'] == 0).mean().compute()
-        ds_anomaly = ds_var_period_mean[variable] - rural_mean
-        if variable in ['huss', 'pr', 'sfcWind']:
-            ds_anomaly = (ds_anomaly/ds_var_period_mean[variable])*100
-        
-        ds_anomaly.attrs['units'] = ds[variable].attrs.get('units', 'unknown')
-        # Save as a NetCDF
-        ds_anomaly.to_netcdf(cache)
+    ds_var_period_mean = ds.mean('time').compute()
+    rural_mean = ds_var_period_mean[variable].where(
+        urban_vicinity['urmask'] == 0).mean().compute()
+    ds_anomaly = ds_var_period_mean[variable] - rural_mean
+    if variable in ['huss', 'pr', 'sfcWind']:
+        ds_anomaly = (ds_anomaly/ds_var_period_mean[variable])*100
+    
+    ds_anomaly.attrs['units'] = ds[variable].attrs.get('units', 'unknown')
 
 
     # Compute the maximum absolute value
@@ -115,23 +118,23 @@ def plot_climatology(variable, URBAN, ds = None, urban_vicinity = None,  cache='
     #URBAN.plot_urban_borders(urban_vicinity, ax, 
     #                         alpha_urb_borders, 
     #                         linewidth_urb_borders)
-    URBAN.plot_urban_polygon(urban_vicinity, ax)
+    plot_urban_polygon(urban_vicinity, ax)
     
     plt.subplots_adjust(wspace=0.1, hspace=0.1)
     
     return fig
 
-def plot_annual_cicle( variable, ds_var = None, urban_vicinity = None, 
+def plot_annual_cycle(variable = None, ds = None, urban_vicinity = None, 
                      time_series = [], valid_stations = [], 
                      data_squares = True, percentiles = [], 
                      var_map = var_map, ucdb_city = None, 
-                     city = None, cache = '', ax = None, 
-                      vmax = None, vmin = None):
+                     city = None, ax = None, 
+                     vmax = None, vmin = None):
     '''
     Plot time series data with optional urban area overlay and additional time series overlay.
 
     Parameters:
-    ds_var (xarray.Dataset): Dataset containing the variable data.
+    ds (xarray.Dataset): Dataset containing the variable data.
     variable (str): Name of the variable of interest.
     urban_vicinity (xarray.Dataset): Dataset containing information about urban areas.
     time_series (list of pandas.DataFrame, optional): List of time series dataframes to overlay on the plot.
@@ -143,43 +146,27 @@ def plot_annual_cicle( variable, ds_var = None, urban_vicinity = None,
     urban_area_legend = False
     not_urban_area_legend = False
 
-        
-    if os.path.exists(cache):
-        ds_var = xr.open_dataset(cache)
-        rural_anomaly = ds_var['rural_anomaly']
-        urban_anomaly = ds_var['urban_anomaly']
-        rural_mean = ds_var['rural_mean']
-        urban_mean = ds_var['urban_mean']
-    else:
-        is_rural = urban_vicinity['urmask'] == 0
-        is_urban = urban_vicinity['urmask'] == 1
-        rural_mean = (ds_var[variable]
-            .where(is_rural)
-            .groupby('time.month')
-            .mean(dim = [ds_var.cf['Y'].name, ds_var.cf['X'].name, 'time'])
-            .compute()
-        )
-                       
-        ds_var_period_mean = ds_var.groupby('time.month').mean('time')                  
-        ds_annomaly = ds_var_period_mean[variable] - rural_mean
-        if variable in ['huss', 'pr', 'sfcWind']:
-            ds_annomaly = (ds_annomaly / ds_var_period_mean[variable]) * 100
+    ds = ds[variable]
+    
+    is_rural = urban_vicinity['urmask'] == 0
+    is_urban = urban_vicinity['urmask'] == 1
+    rural_mean = (ds
+        .where(is_rural)
+        .groupby('time.month')
+        .mean(dim = [ds.cf['Y'].name, ds.cf['X'].name, 'time'])
+        .compute()
+    )
+                   
+    ds_period_mean = ds.groupby('time.month').mean('time')                  
+    ds_annomaly = ds_period_mean - rural_mean
+    if variable in ['huss', 'pr', 'sfcWind']:
+        ds_annomaly = (ds_annomaly / ds_period_mean) * 100
 
-        rural_anomaly = ds_annomaly.where(is_rural)
-        urban_anomaly = ds_annomaly.where(is_urban)
+    rural_anomaly = ds_annomaly.where(is_rural)
+    urban_anomaly = ds_annomaly.where(is_urban)
 
-        urban_mean = urban_anomaly.mean(dim = [ds_var.cf['Y'].name, ds_var.cf['X'].name]).compute()   
+    urban_mean = urban_anomaly.mean(dim = [ds.cf['Y'].name, ds.cf['X'].name]).compute()   
         
-        if cache != '':
-            xr.Dataset(dict(
-                rural_anomaly = rural_anomaly,
-                urban_anomaly = urban_anomaly,
-                rural_mean = rural_mean,
-                urban_mean = urban_mean
-            ),
-            attrs={
-                "units": ds_var[variable].attrs.get('units', 'unknown')}  
-            ).to_netcdf(cache)
 
     # Plot mean annual cycle (urban and rural)
     if ax == None: 
@@ -218,8 +205,8 @@ def plot_annual_cicle( variable, ds_var = None, urban_vicinity = None,
                     rural_anomaly['month'], upper_percentile,
                     color=colors[index], alpha=0.5, linewidth=1, linestyle='--', label=f'Upper Percentile')
             for i, j in product(anom.cf['X'].values, anom.cf['Y'].values):
-                anom_val = anom.sel({ds_var.cf['X'].name:i,
-                                     ds_var.cf['Y'].name:j})
+                anom_val = anom.sel({ds.cf['X'].name:i,
+                                     ds.cf['Y'].name:j})
                 if not np.isnan(anom_val[0]):
                     anom_val.plot(ax=ax, color=colors[index], linewidth=0.1, alpha = 0.1)
                          
@@ -245,10 +232,6 @@ def plot_annual_cicle( variable, ds_var = None, urban_vicinity = None,
         time_series_mon_mean_anom['rural_mean'].plot(ax = ax, color='g', linestyle='-', 
                                                      linewidth = 4, label='Vicinity obs. mean', 
                                                      zorder = 2000)
-        if cache != '':
-             xr.Dataset(dict(
-                urban_mean_anom = time_series_mon_mean_anom['urban_mean'],
-                )).to_netcdf(cache)
             
         
     ax.set_xticks(np.arange(1, 13))
@@ -258,10 +241,8 @@ def plot_annual_cicle( variable, ds_var = None, urban_vicinity = None,
     if vmax is not None and vmin is not None:
         ax.set_ylim(vmin, vmax)
 
-    if cache == '':
-        unit = ds_var[variable].attrs.get('units', 'unknown')  # Default to 'unknown' if 'units' is missing
     else:
-        unit = ds_var.attrs.get('units', 'unknown')  # Default to 'unknown' if 'units' is missing
+        unit = ds.attrs.get('units', 'unknown')  # Default to 'unknown' if 'units' is missing
     if fig:
         # Add legend to the plot
         ax.legend(fontsize = 14, loc='center left', bbox_to_anchor=(0, -0.2), prop={'size': 14})
@@ -296,11 +277,11 @@ def plot_annual_cicle( variable, ds_var = None, urban_vicinity = None,
         ax.set_title(f"", fontsize=18)
         ax.set_ylabel(f"", fontsize=18)
         
-def plot_daily_cicle(variable, ds_var=None, urban_vicinity=None, 
+def plot_daily_cycle(variable, ds_var=None, urban_vicinity=None, 
              time_series=[], valid_stations=[], 
              data_squares=True, percentiles=[], 
              var_map=var_map, ucdb_city=None, 
-             city=None, cache='', ax=None, vmax=None, 
+             city=None, ax=None, vmax=None, 
              vmin=None, period= 'Annual', annomaly = True):
     '''
     Plot daily cycle data with optional urban area overlay and additional time series overlay.
@@ -317,50 +298,33 @@ def plot_daily_cicle(variable, ds_var=None, urban_vicinity=None,
     '''
     urban_area_legend = False
     not_urban_area_legend = False
+    
+    if period == 'jja':
+        ds_var = ds_var.sel(time=ds_var['time'].dt.month.isin([6,7,8]))
+    if period == 'djf':
+        ds_var = ds_var.sel(time=ds_var['time'].dt.month.isin([1,2,12]))
+    is_rural = urban_vicinity['urmask'] == 0
+    is_urban = urban_vicinity['urmask'] == 1
+    rural_mean = (ds_var[variable]
+        .where(is_rural)
+        .groupby('time.hour')  # Group by daily hours
+        .mean(dim=[ds_var.cf['Y'].name, ds_var.cf['X'].name, 'time'])
+        .compute()
+    )
 
-    if os.path.exists(cache):
-        ds_var = xr.open_dataset(cache)
-        rural_anomaly = ds_var['rural_anomaly']
-        urban_anomaly = ds_var['urban_anomaly']
-        rural_mean = ds_var['rural_mean']
-        urban_mean = ds_var['urban_mean']
+    ds_var_period_mean = ds_var.groupby('time.hour').mean('time')
+    # Group by daily hours
+    if annomaly == True:
+        ds_anomaly = ds_var_period_mean[variable] - rural_mean
+        if variable in ['huss', 'pr', 'sfcWind']:
+            ds_anomaly = (ds_anomaly / ds_var_period_mean[variable]) * 100
     else:
-        if period == 'jja':
-            ds_var = ds_var.sel(time=ds_var['time'].dt.month.isin([6,7,8]))
-        if period == 'djf':
-            ds_var = ds_var.sel(time=ds_var['time'].dt.month.isin([1,2,12]))
-        is_rural = urban_vicinity['urmask'] == 0
-        is_urban = urban_vicinity['urmask'] == 1
-        rural_mean = (ds_var[variable]
-            .where(is_rural)
-            .groupby('time.hour')  # Group by daily hours
-            .mean(dim=[ds_var.cf['Y'].name, ds_var.cf['X'].name, 'time'])
-            .compute()
-        )
+        ds_anomaly = ds_var_period_mean[variable]
 
-        ds_var_period_mean = ds_var.groupby('time.hour').mean('time')
-        # Group by daily hours
-        if annomaly == True:
-            ds_anomaly = ds_var_period_mean[variable] - rural_mean
-            if variable in ['huss', 'pr', 'sfcWind']:
-                ds_anomaly = (ds_anomaly / ds_var_period_mean[variable]) * 100
-        else:
-            ds_anomaly = ds_var_period_mean[variable]
+    rural_anomaly = ds_anomaly.where(is_rural)
+    urban_anomaly = ds_anomaly.where(is_urban)
 
-        rural_anomaly = ds_anomaly.where(is_rural)
-        urban_anomaly = ds_anomaly.where(is_urban)
-
-        urban_mean = urban_anomaly.mean(dim=[ds_var.cf['Y'].name, ds_var.cf['X'].name]).compute()
-        if cache != '':
-            xr.Dataset(dict(
-                rural_anomaly=rural_anomaly,
-                urban_anomaly=urban_anomaly,
-                rural_mean=rural_mean,
-                urban_mean=urban_mean
-            ),
-            attrs={
-                "units": ds_var[variable].attrs.get('units', 'unknown')}  
-            ).to_netcdf(cache)
+    urban_mean = urban_anomaly.mean(dim=[ds_var.cf['Y'].name, ds_var.cf['X'].name]).compute()
 
     # Plot daily cycle (urban and rural)
     if ax is None: 
@@ -423,11 +387,8 @@ def plot_daily_cicle(variable, ds_var=None, urban_vicinity=None,
     ax.tick_params(axis='y', labelsize=18)
     if vmax is not None and vmin is not None:
         ax.set_ylim(vmin, vmax)
-
-    if cache == '':
-        unit = ds_var[variable].attrs.get('units', 'unknown')
-    else:
-        unit = ds_var.attrs.get('units', 'unknown')
+        
+    unit = ds_var.attrs.get('units', 'unknown')
 
     if fig:
         ax.legend(fontsize=14, loc='center left', bbox_to_anchor=(0, -0.2), prop={'size': 14})
