@@ -301,7 +301,6 @@ class UrbanIsland:
         (rural_mean-rural_mean).plot(ax=ax,  color = 'b', linestyle='-', 
                                      linewidth = 4, label='Vicinity mean')
                              
-        # Plot individual data squares for urban and rural areas if requested
         if percentiles:
             # Fill within percentiles
             axis = [rural_anomaly.get_axis_num(rural_anomaly.cf['X'].name),
@@ -325,11 +324,12 @@ class UrbanIsland:
                     ax.plot(
                         rural_anomaly['month'], upper_percentile,
                         color=colors[index], alpha=0.5, linewidth=1, linestyle='--')
-                for i, j in product(anom.cf['X'].values, anom.cf['Y'].values):
-                    anom_val = anom.sel({ds_anomaly.cf['X'].name:i,
-                                         ds_anomaly.cf['Y'].name:j})
-                    if not np.isnan(anom_val[0]):
-                        anom_val.plot(ax=ax, color=colors[index], linewidth=0.1, alpha = 0.1)
+                if gridcell_series:
+                    for i, j in product(anom.cf['X'].values, anom.cf['Y'].values):
+                        anom_val = anom.sel({ds_anomaly.cf['X'].name:i,
+                                             ds_anomaly.cf['Y'].name:j})
+                        if not np.isnan(anom_val[0]):
+                            anom_val.plot(ax=ax, color=colors[index], linewidth=0.1, alpha = 0.1)
                              
         #Plot the observation if requested
         if not self.obs_attr.empty:
