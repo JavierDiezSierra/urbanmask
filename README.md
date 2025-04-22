@@ -1,9 +1,6 @@
 # Urban and rural surrounding areas selection
 
-
-This repository contains functions to select urban a rural surrounding areas from Global or Regional Climate Models given a specific city.
-
-It includes functionalities to assess the Urban Heat Iland (UHI).
+This repository provides a set of tools designed to identify urban and rural surrounding areas from Global or Regional Climate Models, tailored to a specific city of interest. The code includes functionalities to assess the Urban Heat Island (UHI) effect with configurable parameters for different spatial resolutions and environments.
 
 ## Repository Overview
 ### Key Components
@@ -17,8 +14,11 @@ It includes functionalities to assess the Urban Heat Iland (UHI).
 
     - tasmin: Minimum temperature.
     - tasmax: Maximum temperature.
+    - tas: Mean air temperature (can be hourly or daily depending on the dataset).
 
 3. **urban_area_selection.ipynb Notebook**: This Jupyter Notebook allows users to explore urban vs. rural areas for different cities and analyze the UHI effect in those areas.
+
+4. **Paris.ipynb Notebook**: A practical case study applying the UHI and urban area selection algorithms to the city of Paris. It demonstrates the behavior of the methodology across different spatial resolutions (25 km, 12 km, and 3 km), providing insights into the resolution sensitivity of UHI detection.
 
 ## Algorithm description
 
@@ -39,7 +39,20 @@ The morphological dilation function used to determine rural surrounding areas is
 | `min_city_size` | Remove urban nuclei smaller than the specified size. |
 | `scale` | Ratio between rural surrounding and urban grid boxes. |
 
+## License
+Copyright 2023, European Union.
 
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 
 
 
