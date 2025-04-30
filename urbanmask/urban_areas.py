@@ -12,6 +12,8 @@ from itertools import product
 from matplotlib.colors import LinearSegmentedColormap
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from skimage.morphology import dilation, square, remove_small_objects
+from  skimage import measure, morphology
+
 
 from shapely.geometry import box
 from shapely.geometry import Polygon
@@ -128,6 +130,60 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
             ds = ds.sel(lat=slice(lat_min, lat_max), lon=slice(lon_min, lon_max))
         return ds
 
+
+    def remove_small_city(self,
+                          *, 
+                          mask: xr.DataArray) -> xr.DataArray:
+        """
+        Remove small urban regions from an input binary mask, retaining only the largest 
+        or the region closest to the predefined city center if necessary.
+    
+        Parameters
+        ----------
+        mask : xarray.DataArray
+            A binary mask (values 0 and 1) where 1 indicates urban areas.
+        
+        Returns
+        -------
+        xr.DataArray
+            A cleaned binary mask where small objects have been removed, 
+            preserving only the main urban region.
+        """
+        # Label connected regions in the mask
+        labeled_mask = measure.label(mask.values)
+    
+        # Remove small objects based on a minimum city size threshold
+        cleaned_mask = morphology.remove_small_objects(labeled_mask, min_size=self.min_city_size)
+    
+        # If all objects were removed, select the region closest to the city center
+        if np.max(cleaned_mask) == 0:
+            # Calculate pixel indices closest to the city center coordinates
+            y_center = np.abs(mask['lat'].values - self.lat_city).argmin()
+            x_center = np.abs(mask['lon'].values - self.lon_city).argmin()
+            center_pixel = np.array([y_center, x_center])
+    
+            # Compute distances from each region centroid to the city center
+            distances = []
+            for region in measure.regionprops(labeled_mask):
+                region_center = np.array(region.centroid)  # (row, col) format
+                distance = np.linalg.norm(region_center - center_pixel)
+                distances.append((region.label, distance))
+    
+            # Select the label of the closest region
+            closest_label = min(distances, key=lambda x: x[1])[0]
+    
+            # Create a mask keeping only the closest region
+            cleaned_mask = (labeled_mask == closest_label)
+        else:
+            # If objects remain, set the cleaned_mask to 1 (urban) and 0 (non-urban)
+            cleaned_mask = (cleaned_mask > 0)
+    
+        # Return the result as an xarray.DataArray with the original coordinates
+        return xr.DataArray(
+            cleaned_mask.astype(int),
+            coords=mask.coords,
+            dims=mask.dims)
+
     def define_masks(
         self, 
         *,
@@ -161,8 +217,7 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
         # sfturf
         sfturf_mask = ds_sfturf[self.urban_var] > self.urban_th
         # Remove small objects
-        sfturf_mask_rem_small = remove_small_objects(sfturf_mask.values.astype(bool), 
-                                                    min_size = self.min_city_size)
+        sfturf_mask_rem_small = UrbanVicinity.remove_small_city(self,mask = sfturf_mask.astype(bool))
         sfturf_mask.data = sfturf_mask_rem_small
         deleted_small = ~sfturf_mask_rem_small*(ds_sfturf[self.urban_var] > self.urban_th)
         # Calculate surrounding mask and delete small objects from it
